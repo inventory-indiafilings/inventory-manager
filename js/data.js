@@ -196,9 +196,12 @@ function setBranch(id) {
 }
 
 function renderBranchTabs() {
+  if(!branches || branches.length === 0) return;
+  if(!activeBranchId || !branches.find(b=>b.id===activeBranchId)) activeBranchId = branches[0].id;
   document.getElementById('branch-tabs').innerHTML =
     branches.map(b=>`<button class="branch-tab${b.id===activeBranchId?' active':''}" onclick="setBranch('${b.id}')">${b.name}</button>`).join('');
-  document.getElementById('branch-sub').textContent = branch().name + ' Branch';
+  const cur = branch();
+  if(cur) document.getElementById('branch-sub').textContent = cur.name + ' Branch';
 }
 
 function tc(team) {
@@ -386,11 +389,17 @@ async function saveDevice(mode,id){
 }
 
 /* ─── SESSION RESTORE ON REFRESH ─── */
-(async function restoreSession(){
+async function restoreSession(){
   const saved=sessionStorage.getItem('inv_session');
   if(!saved)return;
   try{
     const sess=JSON.parse(saved);
+    /* Wait until auth.js has finished loading users from Supabase */
+    let waited=0;
+    while((!users||users.length===0)&&waited<5000){
+      await new Promise(r=>setTimeout(r,100));
+      waited+=100;
+    }
     const found=users.find(u=>u.username===sess.username);
     if(!found){sessionStorage.removeItem('inv_session');return;}
     currentUser=found;
@@ -418,4 +427,6 @@ async function saveDevice(mode,id){
     renderBranchTabs();render();loadTheme();applyPermissions();
     window.scrollTo(0,0);
   }catch(e){sessionStorage.removeItem('inv_session');}
-})();
+}
+/* Small delay so auth.js initUsers() runs first */
+setTimeout(restoreSession, 300);
