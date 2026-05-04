@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Mobile & SIM Inventory Manager — IndiaFilings</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════
+     LOGIN SCREEN
+═══════════════════════════════════ -->
+<div id="login-screen">
+  <canvas id="login-canvas"></canvas>
+  <div class="grid-lines"></div>
+  <div class="hex-glow g1"></div>
+  <div class="hex-glow g2"></div>
+  <div class="login-box">
+       <div class="login-logo">
+      <div class="login-title">INDIAFILINGS</div>
+      <div class="login-sub">Inventory Management System</div>
+    </div>
+    <div id="login-error" class="login-error">⚠ Invalid username or password.</div>
+    <div class="login-form-group">
+      <label>Username</label>
+      <input type="text" id="login-user" placeholder="Enter username" autocomplete="username"/>
+    </div>
+    <div class="login-form-group">
+      <label>Password</label>
+      <input type="password" id="login-pass" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="login-btn" onclick="doLogin()">🔐 &nbsp;SIGN IN</button>
+    <div class="login-footer">🔒 Secure Access &nbsp;|&nbsp; IndiaFilings Pvt Ltd</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     WELCOME SCREEN
+═══════════════════════════════════ -->
+<div id="welcome-screen" style="display:none;">
+  <canvas id="network-canvas"></canvas>
+  <div class="grid-lines"></div>
+  <div class="hex-glow g1"></div>
+  <div class="hex-glow g2"></div>
+  <div class="welcome-content">
+    <div class="if-logo-wrap">
+      <div class="if-brand-block">
+        <div class="if-org-name">INDIAFILINGS PVT LTD</div>
+        <div class="if-org-sub"><CENTER> Mobile &amp; SIM Inventory</CENTER></div>
+      </div>
+    </div>
+    <div class="welcome-logo">INVENTORY<br/>MANAGER</div>
+    <div class="welcome-sub">Enterprise Device Control System</div>
+    <div class="welcome-tagline">Track. Manage. Control. Every device, every branch.</div>
+    <div class="welcome-user-badge" id="welcome-user-badge">👤 <span id="welcome-username-label">User</span></div>
+    <button class="welcome-enter-btn" onclick="enterApp()">
+      <div class="btn-pulse"></div>
+      Launch Dashboard
+    </button>
+    <div class="welcome-stats">
+      <div class="ws-item"><div class="ws-num">95+</div><div class="ws-label">Devices</div></div>
+      <div class="ws-item"><div class="ws-num">6</div><div class="ws-label">Teams</div></div>
+      <div class="ws-item"><div class="ws-num">1</div><div class="ws-label">Branch</div></div>
+      <div class="ws-item"><div class="ws-num">∞</div><div class="ws-label">Uptime</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     MAIN APP
+═══════════════════════════════════ -->
+<div id="main-app">
+  <header class="app-header" style="position:relative;">
+    <div class="brand-area">
+      <div>
+        <div class="brand-title">INDIAFILINGS PVT LTD</div>
+        <div class="brand-sub"><span class="status-dot"></span><span id="branch-sub">Guindy Branch</span></div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="back-btn" onclick="goBackToWelcome()" title="Back">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        Back
+      </button>
+      <button class="btn" onclick="openModal('manage-teams')" title="Manage Teams">⚙ Teams</button>
+      <button class="btn primary" onclick="openModal('add-device')">＋ Add Device</button>
+      <!-- User Menu -->
+      <div class="user-menu-wrap">
+        <div class="user-avatar-btn" onclick="toggleUserMenu()" id="user-avatar-btn">
+          <div class="user-avatar" id="header-avatar">A</div>
+          <div>
+            <div class="user-name" id="header-username">Admin</div>
+            <div class="user-role" id="header-role">Administrator</div>
+          </div>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="user-dropdown" id="user-dropdown">
+          <div class="user-dropdown-header">
+            <div class="user-dropdown-name" id="dd-username">Admin</div>
+            <div class="user-dropdown-role" id="dd-role">Administrator</div>
+            <div style="margin-top:6px;" id="dd-perm-summary"></div>
+          </div>
+          <div class="user-dropdown-item" onclick="openActivityLog()">
+            <div class="ddi-icon green">📋</div>
+            <div><div>Activity Logs</div><div style="font-size:10px;color:var(--text-dim);margin-top:1px;">View system activity</div></div>
+          </div>
+          <div class="user-dropdown-item" onclick="closeUserMenu();showMyPermissions()">
+            <div class="ddi-icon purple">🔐</div>
+            <div><div>My Permissions</div><div style="font-size:10px;color:var(--text-dim);margin-top:1px;">View your access level</div></div>
+          </div>
+          <div class="user-dropdown-item" onclick="openSettings()">
+            <div class="ddi-icon blue">⚙️</div>
+            <div><div>Settings</div><div style="font-size:10px;color:var(--text-dim);margin-top:1px;">App preferences & users</div></div>
+          </div>
+          <div class="user-dropdown-item warn" onclick="closeUserMenu();showChangePassword()">
+            <div class="ddi-icon orange">🔑</div>
+            <div>Change Password</div>
+          </div>
+          <div class="user-dropdown-item danger" onclick="doLogout()">
+            <div class="ddi-icon red">🚪</div>
+            <div>Logout</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="app-body">
+    <!-- Branch Row -->
+    <div class="branch-row">
+      <div class="branch-tabs" id="branch-tabs"></div>
+      <div class="branch-actions">
+        <button class="btn" onclick="openModal('add-branch')">＋ Branch</button>
+        <button class="btn warn" onclick="openModal('rename-branch')">✎ Rename</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-bar" id="stats-bar"></div>
+
+    <!-- Dashboard -->
+    <div class="dashboard" id="dashboard-panel">
+      <div class="dash-card orange">
+        <div class="dash-card-title">Total Devices</div>
+        <div class="dash-card-value" id="d-total">—</div>
+        <div class="dash-card-sub">across all teams</div>
+      </div>
+      <div class="dash-card green">
+        <div class="dash-card-title">Active Teams</div>
+        <div class="dash-card-value" id="d-teams">—</div>
+        <div class="dash-card-sub" id="d-teams-sub">in this branch</div>
+      </div>
+      <div class="dash-card purple">
+        <div class="dash-card-title">Branches</div>
+        <div class="dash-card-value" id="d-branches">—</div>
+        <div class="dash-card-sub">registered locations</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-card-title">Team Distribution</div>
+        <div class="mini-chart" id="mini-chart"></div>
+        <div style="height:22px;"></div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="section-header">
+      <h2>Device Registry</h2>
+      <div class="section-line"></div>
+    </div>
+    <div class="export-bar">
+      <div class="export-bar-left">
+        <div class="record-count">Showing <span id="rec-count">0</span> records</div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn" onclick="exportCSV()">⬇ Export CSV</button>
+        <button class="btn" onclick="printTable()">🖨 Print</button>
+      </div>
+    </div>
+    <div class="controls">
+      <select id="team-filter" onchange="render()"><option value="">All Teams</option></select>
+      <input type="text" id="search" placeholder="Search name, model, IMEI, SIM…" oninput="render()"/>
+      <button class="btn" onclick="resetFilters()">↺ Clear</button>
+    </div>
+
+    <!-- Table -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Name</th><th>Team</th><th>Model</th><th>IMEI</th><th>SIM / Serial</th><th>Phone</th><th>Notes</th><th></th></tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     SETTINGS PANEL
+═══════════════════════════════════ -->
+<div id="settings-overlay" onclick="if(event.target===this)closeSettings()">
+  <div class="settings-panel">
+    <div class="settings-header">
+      <div class="settings-title">⚙️ Settings</div>
+      <button class="settings-close" onclick="closeSettings()">✕</button>
+    </div>
+
+    <!-- Appearance -->
+    <div class="settings-section">
+      <div class="settings-section-title">Appearance</div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;font-family:'Share Tech Mono',monospace;text-transform:uppercase;letter-spacing:1px;">Color Theme</div>
+        <div class="theme-options">
+          <div class="theme-opt dark-opt active" id="theme-dark" onclick="setTheme('dark')">
+            <div class="theme-dot"></div>Dark Mode
+          </div>
+          <div class="theme-opt light-opt" id="theme-light" onclick="setTheme('light')">
+            <div class="theme-dot"></div>White Theme
+          </div>
+        </div>
+      </div>
+      <div class="settings-row">
+        <div><div class="settings-row-label">Compact Table</div><div class="settings-row-sub">Tighter row spacing</div></div>
+        <label class="toggle"><input type="checkbox" id="tog-compact" onchange="applyCompact(this.checked)"/><span class="toggle-slider"></span></label>
+      </div>
+      <div class="settings-row">
+        <div><div class="settings-row-label">Show IMEI Column</div><div class="settings-row-sub">Toggle IMEI visibility</div></div>
+        <label class="toggle"><input type="checkbox" id="tog-imei" checked onchange="applyImeiToggle(this.checked)"/><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+
+    <!-- Branch Management -->
+    <div class="settings-section">
+      <div class="settings-section-title">Branch Management</div>
+      <div id="settings-branch-list" style="margin-bottom:10px;"></div>
+      <button class="settings-btn" onclick="closeSettings();openModal('add-branch')">＋ Add New Branch</button>
+    </div>
+
+    <!-- User Management -->
+    <div class="settings-section">
+      <div class="settings-section-title">User Accounts</div>
+      <div class="user-list" id="user-list"></div>
+      <button class="settings-btn" onclick="showAddUserModal()" style="margin-top:4px;">＋ Add User</button>
+    </div>
+
+    <!-- Role Permissions -->
+    <div class="settings-section" id="perm-settings-section">
+      <div class="settings-section-title">Role Permissions</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px;font-family:'Share Tech Mono',monospace;">Define what each role can access and modify.</div>
+      <div id="perm-role-list"></div>
+      <button class="settings-btn" onclick="openEditPermModal()" style="margin-top:4px;">⚙ Edit Role Permissions</button>
+    </div>
+
+    <!-- Session & Security -->
+    <div class="settings-section">
+      <div class="settings-section-title">Security</div>
+      <div class="settings-row">
+        <div><div class="settings-row-label">Session Timeout</div><div class="settings-row-sub">Auto-logout after inactivity</div></div>
+      </div>
+      <select class="settings-select" id="session-timeout">
+        <option value="0">Never</option>
+        <option value="15">15 minutes</option>
+        <option value="30" selected>30 minutes</option>
+        <option value="60">1 hour</option>
+        <option value="120">2 hours</option>
+      </select>
+      <div class="settings-row" style="margin-top:12px;">
+        <div><div class="settings-row-label">Login Attempts Limit</div><div class="settings-row-sub">Lock after failed logins</div></div>
+        <select class="settings-select" style="width:80px;margin-top:0;" id="login-attempts">
+          <option>3</option><option selected>5</option><option>10</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Data Management -->
+    <div class="settings-section">
+      <div class="settings-section-title">Data Management</div>
+      <button class="settings-btn" onclick="exportCSV();closeSettings()">⬇ Export All Data (CSV)</button>
+      <button class="settings-btn" onclick="printTable();closeSettings()">🖨 Print Current View</button>
+      <button class="settings-btn danger" onclick="confirmClearData()" style="margin-top:8px;">🗑 Clear All Branch Data</button>
+    </div>
+
+    <!-- About -->
+    <div class="settings-section">
+      <div class="settings-section-title">About</div>
+      <div style="font-size:12px;color:var(--text-dim);line-height:1.8;font-family:'Share Tech Mono',monospace;">
+        <div>System: Mobile & SIM Inventory Manager</div>
+        <div>Version: 2.0.0</div>
+        <div>Company: IndiaFilings Pvt Ltd</div>
+        <div>Build: 2025-Pro</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════
+     ACTIVITY LOG PANEL
+═══════════════════════════════════ -->
+<div id="activity-overlay" onclick="if(event.target===this)closeActivityLog()">
+  <div class="activity-panel">
+    <div class="activity-header">
+      <div class="activity-title">📋 Activity Logs</div>
+      <button class="settings-close" onclick="closeActivityLog()">✕</button>
+    </div>
+    <button class="activity-clear-btn" onclick="clearActivityLog()">🗑 Clear Logs</button>
+    <div class="activity-list" id="activity-list">
+      <div class="activity-empty">No activity recorded yet.</div>
+    </div>
+  </div>
+</div>
+
+<div id="modal-container"></div>
+<div id="toast"><span id="toast-msg"></span></div>
+
+<!-- ═══════════════════════════════════
+     SCRIPTS (order matters)
+═══════════════════════════════════ -->
+<!-- 1. Supabase client library (must be first) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<!-- 2. Your Supabase project URL + key -->
+<script src="js/supabase.js"></script>
+<!-- 3. App modules -->
+<script src="js/permissions.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/canvas.js"></script>
+<script src="js/render.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
