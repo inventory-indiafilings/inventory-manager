@@ -79,11 +79,44 @@ function doLogout(){
   closeUserMenu();
 }
 
-function showWelcomeScreen(){
+async function showWelcomeScreen(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('welcome-screen').style.display='flex';
   document.getElementById('welcome-username-label').textContent=currentUser.username;
   initNetworkCanvas();
+
+  /* Load live stats from Supabase and update welcome screen */
+  try {
+    const { data: branchRows } = await db.from('branches').select('*');
+    const { data: deviceRows } = await db.from('devices').select('id, branch_id');
+    const { data: teamRows }   = await db.from('branches').select('teams');
+
+    if(branchRows) {
+      const totalDevices  = deviceRows ? deviceRows.length : 0;
+      const totalBranches = branchRows.length;
+      const totalTeams    = teamRows
+        ? [...new Set(teamRows.flatMap(b => Array.isArray(b.teams) ? b.teams : JSON.parse(b.teams||'[]')))].length
+        : 0;
+
+      document.getElementById('ws-devices').textContent   = totalDevices;
+      document.getElementById('ws-teams').textContent     = totalTeams;
+      document.getElementById('ws-branches').textContent  = totalBranches;
+
+      /* Also preload branches into memory so enterApp is instant */
+      const { data: allDevices } = await db.from('devices').select('*').order('id');
+      branches = branchRows.map(b => ({
+        id: b.id, name: b.name,
+        teams: Array.isArray(b.teams) ? b.teams : JSON.parse(b.teams||'[]'),
+        data: (allDevices||[]).filter(d => d.branch_id === b.id)
+      }));
+      if(!activeBranchId || !branches.find(b=>b.id===activeBranchId)){
+        activeBranchId = branches[0]?.id || 'guindy';
+      }
+    }
+  } catch(e) {
+    /* Non-critical — just show dashes if offline */
+    console.warn('Welcome stats load failed:', e);
+  }
 }
 
 /* ─── ACTIVITY LOG ─── */
