@@ -403,18 +403,9 @@ async function restoreSession(){
     const found=users.find(u=>u.username===sess.username);
     if(!found){sessionStorage.removeItem('inv_session');return;}
     currentUser=found;
+    /* Load data from Supabase — never auto-seed (SQL file handles seeding) */
     const loaded=await loadData();
-    if(loaded&&loaded.length){
-      branches=loaded;
-    } else {
-      /* First-time: seed Guindy branch + all 95 devices */
-      await createBranchDB('guindy','Guindy',[...DEFAULT_TEAMS]);
-      for(const d of GUINDY_DATA){
-        await db.from('devices').insert({branch_id:'guindy',team:d.team,name:d.name,model:d.model||'',imei:d.imei||'',sim:d.sim||'',phone:d.phone||'',notes:d.notes||''});
-      }
-      const reloaded=await loadData();
-      branches=reloaded||[{id:'guindy',name:'Guindy',teams:[...DEFAULT_TEAMS],data:[]}];
-    }
+    branches=loaded||[{id:'guindy',name:'Guindy',teams:[...DEFAULT_TEAMS],data:[]}];
     activeBranchId=sessionStorage.getItem('inv_activeBranch')||'guindy';
     if(!branches.find(b=>b.id===activeBranchId))activeBranchId=branches[0].id;
     document.getElementById('login-screen').style.display='none';
