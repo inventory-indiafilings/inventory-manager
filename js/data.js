@@ -275,8 +275,10 @@ async function deleteDevice(id) {
   if(!confirm('Delete this device record?')) return;
   const b=branch(), rec=b.data.find(r=>r.id===id);
   await deleteDeviceDB(id);
-  b.data=b.data.filter(r=>r.id!==id);
   logActivity('delete','🗑','Device deleted: '+(rec?rec.name:'#'+id),'Branch: '+b.name,'ab-delete');
+  /* Reload fresh from Supabase so dashboard stays in sync */
+  const refreshed=await loadData();
+  if(refreshed&&refreshed.length) branches=refreshed;
   render(); showToast('Device deleted','');
 }
 
@@ -375,15 +377,15 @@ async function saveDevice(mode,id){
     rec.id=id;
     const saved=await saveDeviceDB(rec,activeBranchId);
     if(!saved)return;
-    const idx=b.data.findIndex(r=>r.id===id);
-    if(idx>-1)b.data[idx]={...b.data[idx],...rec};
     logActivity('edit','✏️','Device edited: '+rec.name,'Team: '+rec.team,'ab-edit');
   } else {
     const saved=await saveDeviceDB(rec,activeBranchId);
     if(!saved)return;
-    b.data.push(saved);
     logActivity('add','➕','Device added: '+saved.name,'Team: '+saved.team,'ab-add');
   }
+  /* Always reload fresh from Supabase so dashboard stays in sync */
+  const refreshed=await loadData();
+  if(refreshed&&refreshed.length) branches=refreshed;
   closeModal();render();
   showToast(mode==='edit-device'?'Device updated!':'Device added!','success');
 }
